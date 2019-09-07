@@ -1,0 +1,12 @@
+{
+  "function_comment": "/*!\n * @brief function of library\n */",
+  "function": "visibility type name (args)\n{\n\n}\n",
+  "defines": "#define NAME value\n",
+  "variables": "visibility type name = value;\n",
+
+  "ll_function_comment": ["/*!", " * @brief function of library", " * @return: type", " */"],
+  "ll_param_in": ["@param[in] variable: "],
+  "ll_function": "visibility type name (args)\n{\n\n}\n",
+  "ll_defines": "#define NAME value\n",
+  "ll_variables": "visibility type name = value;\n"
+}
