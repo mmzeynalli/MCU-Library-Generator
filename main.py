@@ -7,17 +7,18 @@ from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QDateTimeEdit,
                              QVBoxLayout, QWidget, QFileDialog, QMainWindow)
 
 import os
-from entities import Function, Variable
+from entities import Function, Variable, Configuration
+import generator
 
-
-class LibGenerator(QDialog):
+class LibGeneratorUI(QDialog):
 
     num_of_funcs = 0
 
     def __init__(self, parent=None):
-        super(LibGenerator, self).__init__(parent)
+        super(LibGeneratorUI, self).__init__(parent)
 
         self.layout = QGridLayout(self)
+        self.workspace = os.path.dirname(os.path.realpath(__file__))  # current working folder
 
         self.tabs = QTabWidget()
         self.tab1 = QWidget()
@@ -41,8 +42,9 @@ class LibGenerator(QDialog):
         self.tab1.setLayout(self.tab1_layout)
 
         self.layout.addWidget(self.tabs)
-        self.setLayout(self.layout)
+        self.addGenerateButton()
 
+        self.setLayout(self.layout)
         self.setGeometry(700, 400, 400, 50)
         self.setWindowTitle('MCU Library Generator v1.0.0')
         self.setStyle('Fusion')
@@ -54,17 +56,17 @@ class LibGenerator(QDialog):
     def create_functions_tab(self):
 
         self.conf_box = QGroupBox('Configurations')
-        self.confs = QGridLayout()
+        self.confs_layout = QGridLayout()
         self.createConfBox()
 
 
         self.functions_box = QGroupBox('Functions')
-        self.functions = QGridLayout()
+        self.functions_layout = QGridLayout()
 
         add_func_button = QPushButton('Add function')
         add_func_button.setIcon(QtGui.QIcon('img/add.jpg'))
         add_func_button.clicked.connect(self.addFunction)
-        self.functions.addWidget(add_func_button, 0, 0)
+        self.functions_layout.addWidget(add_func_button, 0, 0)
 
         self.addFunction()
 
@@ -84,7 +86,7 @@ class LibGenerator(QDialog):
 
         # to use in get_work_dir function
         self.txt_dir = QLineEdit()
-        self.txt_dir.setText(os.path.dirname(os.path.realpath(__file__)))
+        self.txt_dir.setText(self.workspace)
         self.txt_dir.setCursorPosition(0)
 
         ######################################
@@ -93,24 +95,26 @@ class LibGenerator(QDialog):
         txt_file_name = QLineEdit()
         txt_file_name.setText('sim800')
 
-        self.confs.addWidget(lbl_username, 0, 0)
-        self.confs.addWidget(txt_username, 0, 1, 1, 20)
-        self.confs.addWidget(lbl_dir, 1, 0)
-        self.confs.addWidget(self.txt_dir, 1, 1, 1, 20)
-        self.confs.addWidget(bt_dir, 1, 21)
-        self.confs.addWidget(lbl_file_name, 2, 0)
-        self.confs.addWidget(txt_file_name, 2, 1, 1, 20)
+        self.config = Configuration(txt_username, self.txt_dir, txt_file_name)
 
-        self.conf_box.setLayout(self.confs)
+        self.confs_layout.addWidget(lbl_username, 0, 0)
+        self.confs_layout.addWidget(txt_username, 0, 1, 1, 20)
+        self.confs_layout.addWidget(lbl_dir, 1, 0)
+        self.confs_layout.addWidget(self.txt_dir, 1, 1, 1, 20)
+        self.confs_layout.addWidget(bt_dir, 1, 21)
+        self.confs_layout.addWidget(lbl_file_name, 2, 0)
+        self.confs_layout.addWidget(txt_file_name, 2, 1, 1, 20)
+
+        self.conf_box.setLayout(self.confs_layout)
 
     def get_work_dir(self):
-        self.workspace = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
+        self.workspace = str(QFileDialog.getExistingDirectory(self, 'Select Directory'))
         self.txt_dir.setText(self.workspace)
         self.txt_dir.setCursorPosition(0)
 
     def addFunction(self):
 
-        lbls = [QLabel('Return Type'), QLabel('Visibility'), QLabel('Function Name'), QLabel('Arguments')]
+        lbls = [QLabel('Return Type'), QLabel('Scope'), QLabel('Function Name'), QLabel('Arguments')]
 
         for lbl in lbls:
             lbl.setAlignment(Qt.AlignCenter)
@@ -127,26 +131,43 @@ class LibGenerator(QDialog):
         #arg_cnt = QSpinBox(self.functions_box)
         argv = QLineEdit()
 
-        self.functions_list.append(Function(self.functions, type, visibility, name, argv))
+        self.functions_list.append(Function(self.functions_layout, type, visibility, name, argv))
 
-        self.functions.addWidget(lbls[0], 1, 0)
-        self.functions.addWidget(lbls[1], 1, 1)
-        self.functions.addWidget(lbls[2], 1, 4)
-        self.functions.addWidget(lbls[3], 1, 18)
+        self.functions_layout.addWidget(lbls[0], 1, 0)
+        self.functions_layout.addWidget(lbls[1], 1, 1)
+        self.functions_layout.addWidget(lbls[2], 1, 4)
+        self.functions_layout.addWidget(lbls[3], 1, 18)
 
 
-        self.functions.addWidget(type, 2 + self.num_of_funcs, 0)
-        self.functions.addWidget(visibility, 2 + self.num_of_funcs, 1)
-        self.functions.addWidget(name, 2 + self.num_of_funcs, 2, 1, 6)
-        self.functions.addWidget(argv, 2 + self.num_of_funcs, 8, 1, 20)
+        self.functions_layout.addWidget(type, 2 + self.num_of_funcs, 0)
+        self.functions_layout.addWidget(visibility, 2 + self.num_of_funcs, 1)
+        self.functions_layout.addWidget(name, 2 + self.num_of_funcs, 2, 1, 6)
+        self.functions_layout.addWidget(argv, 2 + self.num_of_funcs, 8, 1, 20)
 
         self.num_of_funcs += 1
-        self.functions_box.setLayout(self.functions)
+        self.functions_box.setLayout(self.functions_layout)
 
+    def addGenerateButton(self):
+        generateButton = QPushButton(' Generate')
+        generateButton.clicked.connect(self.generateCode)
+        generateButton.setIcon(QtGui.QIcon('img/generate.jpg'))
+
+        hbox = QHBoxLayout()
+        hbox.addStretch(1)
+        hbox.addWidget(generateButton)
+
+        vbox = QVBoxLayout()
+        vbox.addStretch(1)
+        vbox.addLayout(hbox)
+
+        self.layout.addLayout(vbox, 1, 0)
+
+    def generateCode(self):
+        generator.generateModule(self.config, self.functions_list, [], [])
 
 if __name__ == '__main__':
 
     app = QApplication([])
-    interface = LibGenerator()
+    interface = LibGeneratorUI()
     interface.show()
     app.exec_()
