@@ -16,5 +16,8 @@
 
 /* PROTOTYPES */
 
+/* PUBLIC FUNCTIONS */
+
+/* PRIVATE FUNCTIONS */
 
 /*** end of file ***/

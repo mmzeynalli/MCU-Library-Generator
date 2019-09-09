@@ -1,12 +1,11 @@
 {
   "function_comment": "/*!\n * @brief function of library\n */",
-  "prototype": "visibility type name (args);",
-  "defines": "#define NAME value",
-  "variables": "visibility type name = value;\n",
+  "param_in": "@param[in] variable: ",
+  "prototype": "type name (args);",
+  "function": "type name (args)\n{\n\n}\n",
 
-  "ll_function_comment": ["/*!", " * @brief function of library", " * @return: type", " */"],
-  "ll_param_in": ["@param[in] variable: "],
-  "function": ["visibility type name (args)", "{", "", "}"],
-  "ll_defines": "#define NAME value\n",
-  "ll_variables": "visibility type name = value;\n"
+  "defines": "#define NAME value",
+  "variables": "type name = value;\n",
+
+  "ll_function_comment": ["/*!", " * @brief function of library", " * @return: type", " */"]
 }

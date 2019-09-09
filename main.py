@@ -138,7 +138,6 @@ class LibGeneratorUI(QDialog):
         self.functions_layout.addWidget(lbls[2], 1, 4)
         self.functions_layout.addWidget(lbls[3], 1, 18)
 
-
         self.functions_layout.addWidget(type, 2 + self.num_of_funcs, 0)
         self.functions_layout.addWidget(visibility, 2 + self.num_of_funcs, 1)
         self.functions_layout.addWidget(name, 2 + self.num_of_funcs, 2, 1, 6)
